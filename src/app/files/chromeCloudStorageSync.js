@@ -15,8 +15,12 @@ module.exports = function (filesProviders) {
     chrome.storage.sync.get(key, function (resp) {
       console.log('comparing to cloud', key, resp)
 
-      modalDialogCustom.confirm('', 'Overwrite "' + key + '"? Click Ok to overwrite local file with file from cloud. Cancel will push your local file to the cloud.', () => {
-        if (typeof resp[key] !== 'undefined' && obj[key] !== resp[key]) {
+      function confirmDialog (key, callback) {
+        modalDialogCustom.confirm(null, `Overwrite ${key}? Click Ok to overwrite local file with file from cloud. Cancel will push your local file to the cloud.`, () => { callback(true) })
+      }
+
+      confirmDialog(key, function (theResult) {
+        if (typeof resp[key] !== 'undefined' && obj[key] !== resp[key] && theResult) {
           console.log('Overwriting', key)
           filesProviders['browser'].set(key, resp[key])
         } else {
