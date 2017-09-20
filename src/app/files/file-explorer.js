@@ -1,4 +1,4 @@
-/* global FileReader, confirm */
+/* global FileReader */
 var yo = require('yo-yo')
 var csjs = require('csjs-inject')
 var Treeview = require('ethereum-remix').ui.TreeView
@@ -134,7 +134,6 @@ function fileExplorer (appAPI, files) {
   var api = {}
   api.addFile = function addFile (file) {
     function loadFile () {
-      console.log('inside if loadfile ')
       var fileReader = new FileReader()
       fileReader.onload = function (event) {
         var success = files.set(name, event.target.result)
@@ -143,15 +142,12 @@ function fileExplorer (appAPI, files) {
       }
       fileReader.readAsText(file)
     }
-    // function confirmDialog (callback, message) {
-    //   modalDialogCustom.confirm(null, message, (result) => { loadFile(dothis) })
-    // }
 
     var name = files.type + '/' + file.name
-    // || confirm('The file ' + name + ' already exists! Would you like to overwrite it?')
-    if (!files.exists(name) || modalDialogCustom.confirm(null, 'fred says ... ', () => { loadFile() })) {
+    if (!files.exists(name) || files.exists(name)) {
       loadFile()
-      console.log('inside if clause - but there are 2 loadFiles()')
+    } else {
+      modalDialogCustom.confirm(null, `The file ${name} already exists! Would you like to overwrite it?`, () => { loadFile() })
     }
   }
   this.api = api
@@ -203,10 +199,10 @@ function fileExplorer (appAPI, files) {
     var path = label.dataset.path
     var isFolder = !!~label.className.indexOf('folder')
     if (isFolder) path += '/'
-    if (confirm(`Do you really want to delete "${path}" ?`)) {
+    modalDialogCustom.confirm(null, `Do you really want to delete "${path}" ?`, () => {
       li.parentElement.removeChild(li)
       removeSubtree(files, path, isFolder)
-    }
+    })
   }
 
   function editModeOn (event) {
@@ -223,31 +219,39 @@ function fileExplorer (appAPI, files) {
 
   function editModeOff (event) {
     var label = this
+    function rename () {
+      var newPath = label.dataset.path
+      newPath = newPath.split('/')
+      newPath[newPath.length - 1] = label.innerText
+      newPath = newPath.join('/')
+      if (label.innerText === '') {
+        modalDialogCustom.alert('File name cannot be empty')
+        label.innerText = textUnderEdit
+      } else if (label.innerText.match(/(\/|:|\*|\?|"|<|>|\\|\||')/) !== null) {
+        modalDialogCustom.alert('Special characters are not allowed')
+        label.innerText = textUnderEdit
+      } else if (!files.exists(newPath)) {
+        files.rename(label.dataset.path, newPath, isFolder)
+      } else {
+        modalDialogCustom.alert('File already exists.')
+        label.innerText = textUnderEdit
+      }
+    }
+
+    function cancelRename () {
+      label.innerText = textUnderEdit
+      label.removeAttribute('contenteditable')
+      label.classList.remove(css.rename)
+    }
+
     if (event.which === 13) event.preventDefault()
     if ((event.type === 'blur' || event.which === 27 || event.which === 13) && label.getAttribute('contenteditable')) {
       var isFolder = label.className.indexOf('folder') !== -1
       var save = textUnderEdit !== label.innerText
-      if (save && event.which !== 13) save = confirm('Do you want to rename?')
-      if (save) {
-        var newPath = label.dataset.path
-        newPath = newPath.split('/')
-        newPath[newPath.length - 1] = label.innerText
-        newPath = newPath.join('/')
-        if (label.innerText === '') {
-          modalDialogCustom.alert('File name cannot be empty')
-          label.innerText = textUnderEdit
-        } else if (label.innerText.match(/(\/|:|\*|\?|"|<|>|\\|\||')/) !== null) {
-          modalDialogCustom.alert('Special characters are not allowed')
-          label.innerText = textUnderEdit
-        } else if (!files.exists(newPath)) {
-          files.rename(label.dataset.path, newPath, isFolder)
-        } else {
-          modalDialogCustom.alert('File already exists.')
-          label.innerText = textUnderEdit
-        }
-      } else label.innerText = textUnderEdit
-      label.removeAttribute('contenteditable')
-      label.classList.remove(css.rename)
+      if (save && event.which !== 13) {
+        // modal confirm which runs the inner function
+        modalDialogCustom.confirm(null, `Do you want to rename?`, () => { rename() }, () => { cancelRename() })
+      }
     }
   }
 
