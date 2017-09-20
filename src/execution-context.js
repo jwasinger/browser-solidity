@@ -114,12 +114,12 @@ function ExecutionContext () {
       modalDialogCustom.prompt(null, 'Web3 Provider Endpoint', endPointUrl, (target) => {
         setProviderFromEndpoint(target)
         self.event.trigger('contextChanged', ['web3'])
+        return true
       })
     }
     if (context === 'web3') {
       modalDialogCustom.confirm(null, 'Are you sure you want to connect to an ethereum node?',
-        () => { runPrompt() },
-        () => { return false }
+        () => { runPrompt() }
       )
     } else if (context === 'injected' && injectedProvider === undefined) {
       return false
