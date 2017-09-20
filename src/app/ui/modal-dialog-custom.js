@@ -13,7 +13,7 @@ module.exports = {
   },
   prompt: function (title, text, inputValue, ok, cancel) {
     modal(title,
-  yo`<div>${text}<div><input type='text' name='prompt_text' id='prompt_text' class="${css['prompt_text']}" value='${inputValue}'></div></div>`,
+  yo`<div>${text}<div><input type='text' name='prompt_text' id='prompt_text' class="${css['prompt_text']}" value='${inputValue}' ></div></div>`,
       {
         fn: () => { if (typeof ok === 'function') ok(document.getElementById('prompt_text').value) }
       },

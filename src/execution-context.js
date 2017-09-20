@@ -105,7 +105,7 @@ function ExecutionContext () {
     this.executionContextChange(context, endPointUrl)
   }
 
-  this.executionContextChange = function (context, endPointUrl) {
+  this.executionContextChange = function (context, endPointUrl, cb) {
     function runPrompt () {
       executionContext = context
       if (!endPointUrl) {
@@ -113,29 +113,30 @@ function ExecutionContext () {
       }
       modalDialogCustom.prompt(null, 'Web3 Provider Endpoint', endPointUrl, (target) => {
         setProviderFromEndpoint(target)
-        self.event.trigger('contextChanged', ['web3'])
+        self.event.trigger('prompt contextChanged', ['web3'])
       })
     }
+
     if (context === 'web3') {
       modalDialogCustom.confirm(null, 'Are you sure you want to connect to an ethereum node?',
-        () => { runPrompt() },
-        () => { return false }
+        () => { runPrompt(endPointUrl) }, () => { cb() }
       )
     } else if (context === 'injected' && injectedProvider === undefined) {
-      return false
+      cb()
     } else {
       if (context === 'injected') {
         executionContext = context
         web3.setProvider(injectedProvider)
         self.event.trigger('contextChanged', ['injected'])
+        console.log('injected')
       } else if (context === 'vm') {
+        console.log('vm!')
         executionContext = context
         vm.stateManager.revert(function () {
           vm.stateManager.checkpoint()
         })
         self.event.trigger('contextChanged', ['vm'])
       }
-      return true
     }
   }
 

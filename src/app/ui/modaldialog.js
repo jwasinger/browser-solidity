@@ -82,6 +82,9 @@ module.exports = (title, content, ok, cancel) => {
   if (!container) {
     document.querySelector('body').appendChild(html())
     container = document.querySelector(`.${css.modal}`)
+  } else {
+    document.querySelector('body').appendChild(html())
+    container = document.querySelector(`.${css.modal}`)
   }
   var closeDiv = document.getElementById('modal-close')
 
