@@ -392,11 +392,11 @@ function run () {
     getCompilationResult: () => {
       return compiler.lastCompilationResult
     },
-    warnFoundCall: (position) => {
+    warnExpression: (position) => {
       position = offsetToLineColumnConverter.offsetToLineColumn(position, position.file, compiler.lastCompilationResult)
       return editor.addMarker(position, config.get('currentFile'), 'highlightcall')
     },
-    stopFoundCall: (event) => {
+    stopWarningExpression: (event) => {
       editor.removeMarker(event.eventId, event.fileTarget)
     }
   }, {
