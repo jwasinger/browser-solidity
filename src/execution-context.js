@@ -113,7 +113,9 @@ function ExecutionContext () {
       }
       modalDialogCustom.prompt(null, 'Web3 Provider Endpoint', endPointUrl, (target) => {
         setProviderFromEndpoint(target)
-        self.event.trigger('prompt contextChanged', ['web3'])
+
+        self.event.trigger('contextChanged', ['web3'])
+        return true
       })
     }
 
